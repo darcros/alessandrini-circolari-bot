@@ -1,4 +1,4 @@
-function fixMultinePadding(s: string) {
+export function fixMultinePadding(s: string) {
   return s.split('\n')
     .map(s => s.trim())
     .join('\n');
