@@ -13,11 +13,13 @@ const BASE_URL = requireEnv('BASE_URL');
 const TELEGRAM_CHANNEL_ID = requireEnv('TELEGRAM_CHANNEL_ID');
 
 async function main() {
+  console.info('Ottengo elenco circolari...');
   const newsList = await scrapeNews(BASE_URL);
-  console.log(newsList);
+  console.info(`Ottenute ${newsList.length} circolari.`);
 
   const bot = new Telegraf(TELEGRAM_TOKEN);
 
+  console.info(`Invio ${newsList.length} messaggi`)
   for (const news of newsList) {
     const message = `
       📄Circolare numero ${news.id} del ${format(news.date, 'dd/MM/yyyy')}
@@ -27,6 +29,7 @@ async function main() {
 
     await bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, fixMultinePadding(message), { parse_mode: 'MarkdownV2' });
   }
+  console.info('finito');
 }
 
 main();

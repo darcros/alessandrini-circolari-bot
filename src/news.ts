@@ -60,6 +60,7 @@ export interface News {
 export async function scrapeNews(newsListPageUrl: string): Promise<News[]> {
   const { data: newsListPage } = await axios.get<string>(newsListPageUrl);
   const urls = scrapeNewsList(newsListPage);
+  console.info(`Trovati ${urls.length} link`);
 
   const promises: Promise<News>[] = urls.map(async (url) => {
     const absoluteUrl = new URL(url, newsListPageUrl).toString();
@@ -74,7 +75,7 @@ export async function scrapeNews(newsListPageUrl: string): Promise<News[]> {
   return (await Promise.allSettled(promises))
     .flatMap(x => {
       if (x.status === 'rejected') {
-        console.log(x.reason);
+        console.error('Errore con una circolare', x.reason);
       }
 
       return x.status === 'fulfilled' ? x.value : []
