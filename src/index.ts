@@ -22,12 +22,22 @@ async function main() {
   console.info(`Invio ${newsList.length} messaggi`)
   for (const news of newsList) {
     const message = `
-      📄Circolare numero ${news.id} del ${format(news.date, 'dd/MM/yyyy')}
-      
+      *📄 Circolare*
       [${news.title}](${news.absoluteUrl})
+
+      📒 Numero: ${news.id}
+      📆 Data: ${format(news.date, 'dd/MM/yyyy')}
+
+      ${news.attachments.length > 0 ? '🔗 Allegati' : ''}
+      ${news.attachments
+        .map(attachment => `▪️[${attachment.name}](${attachment.url})`)
+        .join('\n')}
     `;
 
-    await bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, fixMultinePadding(message), { parse_mode: 'MarkdownV2' });
+    await bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, fixMultinePadding(message), {
+      parse_mode: 'Markdown',
+      disable_web_page_preview: true,
+    });
   }
   console.info('finito');
 }

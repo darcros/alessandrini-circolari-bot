@@ -20,12 +20,17 @@ function scrapeNewsList(page: string) {
   return urls;
 }
 
+export interface Attachemnt {
+  name: string;
+  url: string;
+}
+
 // TODO: scrape text
-// TODO: scrape attachments
 interface ScrapedNews {
   title: string;
   id: string;
   date: Date;
+  attachments: Attachemnt[];
 }
 
 function scrapeNewsPage(page: string): ScrapedNews {
@@ -42,11 +47,23 @@ function scrapeNewsPage(page: string): ScrapedNews {
 
   const id = $('.field.field-name-field-circolare-protocollo > .field-item').text();
 
+  // NOTE: tra .field-item e .file c'è uno spazion e non un >
+  // non è fatto a caso, è perchè ci sono altri elementi in mezzo
+  const attachments: Attachemnt[] =
+    $('.field.field-name-field-circ-all-riservati > .field-item .file > a')
+      .toArray()
+      .map((tag) => {
+        const name = $(tag).text();
+        const url = $(tag).attr('href');
+        return { name, url };
+      });
+
   return {
     title,
     date,
     id,
-  }
+    attachments,
+  };
 }
 
 export interface News {
@@ -55,6 +72,7 @@ export interface News {
   date: Date;
   url: string;
   absoluteUrl: string;
+  attachments: Attachemnt[];
 }
 
 export async function scrapeNews(newsListPageUrl: string): Promise<News[]> {
