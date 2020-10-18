@@ -1,6 +1,7 @@
 import { format } from 'date-fns';
 import * as dotenv from 'dotenv';
 import { Telegraf } from 'telegraf';
+import { confirmSent } from './cache';
 import { scrapeNews } from './news';
 
 import { requireEnv, fixMultinePadding } from './util';
@@ -38,6 +39,7 @@ async function main() {
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
     });
+    await confirmSent(news.url);
   }
   console.info('finito');
 }

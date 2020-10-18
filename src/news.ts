@@ -1,7 +1,9 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { parse } from 'date-fns';
+import { url } from 'inspector';
 import { URL } from 'url';
+import { wasSent } from './cache';
 
 function scrapeNewsList(page: string) {
   const $ = cheerio.load(page);
@@ -66,6 +68,18 @@ function scrapeNewsPage(page: string): ScrapedNews {
   };
 }
 
+async function filterNotSent(urls: string[]): Promise<string[]> {
+  const promises = urls.map(async (url) => ({
+    url,
+    sent: await wasSent(url),
+  }));
+
+  const objs = await Promise.all(promises);
+  return objs
+    .filter(({ sent }) => !sent)
+    .map(({ url }) => url);
+}
+
 export interface News {
   title: string;
   id: string;
@@ -77,10 +91,14 @@ export interface News {
 
 export async function scrapeNews(newsListPageUrl: string): Promise<News[]> {
   const { data: newsListPage } = await axios.get<string>(newsListPageUrl);
+
   const urls = scrapeNewsList(newsListPage);
   console.info(`Trovati ${urls.length} link`);
 
-  const promises: Promise<News>[] = urls.map(async (url) => {
+  const newUrls = await filterNotSent(urls);
+  console.info(`Trovati ${newUrls.length} nuovi link`);
+
+  const promises: Promise<News>[] = newUrls.map(async (url) => {
     const absoluteUrl = new URL(url, newsListPageUrl).toString();
     const { data: newsPage } = await axios.get<string>(absoluteUrl);
     const scraped = scrapeNewsPage(newsPage);
