@@ -10,7 +10,7 @@ export class PersistentSetContainer<T> {
     this.load();
   }
 
-  public async get() {
+  public async get(): Promise<Set<T>> {
     if (this.set === null) {
       this.set = await this.load();
     }
@@ -28,7 +28,7 @@ export class PersistentSetContainer<T> {
     }
   }
 
-  public async save() {
+  public async save(): Promise<void> {
     const urls = [...this.set.values()];
     const jsonString = JSON.stringify(urls, null, 2);
 
