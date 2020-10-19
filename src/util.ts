@@ -1,8 +1,8 @@
 export function fixMultinePadding(s: string): string {
   return s
-    .split("\n")
+    .split('\n')
     .map((s) => s.trim())
-    .join("\n");
+    .join('\n');
 }
 
 export function requireEnv(name: string): string {

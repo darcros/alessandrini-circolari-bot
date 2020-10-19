@@ -1,5 +1,5 @@
-import { readFile, writeFile, mkdir } from "fs/promises";
-import { dirname } from "path";
+import { readFile, writeFile, mkdir } from 'fs/promises';
+import { dirname } from 'path';
 
 export class PersistentSetContainer<T> {
   private set: Set<T> = null;
