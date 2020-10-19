@@ -1,47 +1,51 @@
-import { format } from 'date-fns';
-import * as dotenv from 'dotenv';
-import { Telegraf } from 'telegraf';
-import { confirmSent } from './cache';
-import { scrapeNews } from './news';
+import { format } from "date-fns";
+import * as dotenv from "dotenv";
+import { Telegraf } from "telegraf";
+import { confirmSent } from "./cache";
+import { scrapeNews } from "./news";
 
-import { requireEnv, fixMultinePadding } from './util';
+import { requireEnv, fixMultinePadding } from "./util";
 
 // Carica variabili d'ambiente da .env
 dotenv.config();
 
-const TELEGRAM_TOKEN = requireEnv('TELEGRAM_TOKEN');
-const BASE_URL = requireEnv('BASE_URL');
-const TELEGRAM_CHANNEL_ID = requireEnv('TELEGRAM_CHANNEL_ID');
+const TELEGRAM_TOKEN = requireEnv("TELEGRAM_TOKEN");
+const BASE_URL = requireEnv("BASE_URL");
+const TELEGRAM_CHANNEL_ID = requireEnv("TELEGRAM_CHANNEL_ID");
 
 async function main() {
-  console.info('Ottengo elenco circolari...');
+  console.info("Ottengo elenco circolari...");
   const newsList = await scrapeNews(BASE_URL);
   console.info(`Ottenute ${newsList.length} circolari.`);
 
   const bot = new Telegraf(TELEGRAM_TOKEN);
 
-  console.info(`Invio ${newsList.length} messaggi`)
+  console.info(`Invio ${newsList.length} messaggi`);
   for (const news of newsList) {
     const message = `
       *📄 Circolare*
       [${news.title}](${news.absoluteUrl})
 
       📒 Numero: ${news.id}
-      📆 Data: ${format(news.date, 'dd/MM/yyyy')}
+      📆 Data: ${format(news.date, "dd/MM/yyyy")}
 
-      ${news.attachments.length > 0 ? '🔗 Allegati' : ''}
+      ${news.attachments.length > 0 ? "🔗 Allegati" : ""}
       ${news.attachments
-        .map(attachment => `▪️[${attachment.name}](${attachment.url})`)
-        .join('\n')}
+        .map((attachment) => `▪️[${attachment.name}](${attachment.url})`)
+        .join("\n")}
     `;
 
-    await bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, fixMultinePadding(message), {
-      parse_mode: 'Markdown',
-      disable_web_page_preview: true,
-    });
+    await bot.telegram.sendMessage(
+      TELEGRAM_CHANNEL_ID,
+      fixMultinePadding(message),
+      {
+        parse_mode: "Markdown",
+        disable_web_page_preview: true,
+      }
+    );
     await confirmSent(news.url);
   }
-  console.info('finito');
+  console.info("finito");
 }
 
 main();

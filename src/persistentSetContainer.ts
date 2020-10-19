@@ -1,5 +1,5 @@
-import { readFile, writeFile, mkdir } from 'fs/promises';
-import { dirname } from 'path';
+import { readFile, writeFile, mkdir } from "fs/promises";
+import { dirname } from "path";
 
 export class PersistentSetContainer<T> {
   private set: Set<T> = null;
@@ -35,5 +35,4 @@ export class PersistentSetContainer<T> {
     await mkdir(dirname(this.filePath), { recursive: true });
     await writeFile(this.filePath, jsonString);
   }
-
 }

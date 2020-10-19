@@ -1,6 +1,6 @@
 import { PersistentSetContainer } from "./persistentSetContainer";
 
-const CACHE_PATH = './data/cache.json';
+const CACHE_PATH = "./data/cache.json";
 
 const urlSet = new PersistentSetContainer<string>(CACHE_PATH);
 
