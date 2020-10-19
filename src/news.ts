@@ -1,7 +1,6 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { parse } from 'date-fns';
-import { url } from 'inspector';
 import { URL } from 'url';
 import { wasSent } from './cache';
 
@@ -108,7 +107,7 @@ export async function scrapeNews(newsListPageUrl: string): Promise<News[]> {
 
   // Promise.all() fallisce se una promessa qualsiasi fallisce,
   // questo non fallisce mai, al massimo restituice un array vuoto
-  return (await Promise.allSettled(promises))
+  const news = (await Promise.allSettled(promises))
     .flatMap(x => {
       if (x.status === 'rejected') {
         console.error('Errore con una circolare', x.reason);
@@ -116,4 +115,8 @@ export async function scrapeNews(newsListPageUrl: string): Promise<News[]> {
 
       return x.status === 'fulfilled' ? [x.value] : []
     });
+  console.info(`scaricate ${news.length} nuova circolari`);
+
+  // ordina dalla più vecchi alla più nuova
+  return news.reverse();
 }
