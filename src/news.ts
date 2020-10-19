@@ -114,6 +114,6 @@ export async function scrapeNews(newsListPageUrl: string): Promise<News[]> {
         console.error('Errore con una circolare', x.reason);
       }
 
-      return x.status === 'fulfilled' ? x.value : []
+      return x.status === 'fulfilled' ? [x.value] : []
     });
 }
