@@ -1,10 +1,11 @@
-export function fixMultinePadding(s: string) {
-  return s.split('\n')
-    .map(s => s.trim())
+export function fixMultinePadding(s: string): string {
+  return s
+    .split('\n')
+    .map((s) => s.trim())
     .join('\n');
 }
 
-export function requireEnv(name: string) {
+export function requireEnv(name: string): string {
   const envVar = process.env[name];
 
   if (!envVar) {

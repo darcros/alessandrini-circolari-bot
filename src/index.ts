@@ -20,7 +20,7 @@ async function main() {
 
   const bot = new Telegraf(TELEGRAM_TOKEN);
 
-  console.info(`Invio ${newsList.length} messaggi`)
+  console.info(`Invio ${newsList.length} messaggi`);
   for (const news of newsList) {
     const message = `
       *📄 Circolare*
@@ -31,14 +31,18 @@ async function main() {
 
       ${news.attachments.length > 0 ? '🔗 Allegati' : ''}
       ${news.attachments
-        .map(attachment => `▪️[${attachment.name}](${attachment.url})`)
+        .map((attachment) => `▪️[${attachment.name}](${attachment.url})`)
         .join('\n')}
     `;
 
-    await bot.telegram.sendMessage(TELEGRAM_CHANNEL_ID, fixMultinePadding(message), {
-      parse_mode: 'Markdown',
-      disable_web_page_preview: true,
-    });
+    await bot.telegram.sendMessage(
+      TELEGRAM_CHANNEL_ID,
+      fixMultinePadding(message),
+      {
+        parse_mode: 'Markdown',
+        disable_web_page_preview: true,
+      }
+    );
     await confirmSent(news.url);
   }
   console.info('finito');
