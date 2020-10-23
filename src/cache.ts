@@ -1,6 +1,7 @@
 import { PersistentSetContainer } from './persistentSetContainer';
+import { getEnv } from './util';
 
-const CACHE_PATH = './data/cache.json';
+const CACHE_PATH = getEnv('CACHE_PATH', './data/cache.json');
 
 const urlSet = new PersistentSetContainer<string>(CACHE_PATH);
 

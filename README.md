@@ -19,8 +19,9 @@ Le circolari già inviate vengono salvate in una cache (in `./data/cache.json`) 
 Il bot viene configurato tramite variabili d'ambiente.
 Se all'avvio il bot trova un file `.env` nella cartella principale (la stessa di `package.json`) leggerà le variabili d'ambiente da lì. Le variabil nel `.env` hanno la precedenza su quelle del sistema.
 
-| Variabile d'ambiente | Descrizione                                    |
-| -------------------- | ---------------------------------------------- |
-| TELEGRAM_TOKEN       | Il token dell'API di Telegram                  |
-| TELEGRAM_CHANNEL_ID  | ID del canale Telegram dove mandare i messaggi |
-| BASE_URL             | L'url della pagina delle circolari             |
+| variabile d'ambiente | descrizione                                    | default           |
+| -------------------- | ---------------------------------------------- | ----------------- |
+| TELEGRAM_TOKEN       | Il token dell'API di Telegram                  |                   |
+| BASE_URL             | L'url della pagina delle circolari             |                   |
+| TELEGRAM_CHANNEL_ID  | ID del canale Telegram dove mandare i messaggi |                   |
+| CACHE_PATH           | Il percorso nel quale salvare il file di cache | ./data/cache.json |
