@@ -4,7 +4,7 @@ import { parse } from 'date-fns';
 import { URL } from 'url';
 import { wasSent } from './cache';
 
-function scrapeNewsList(page: string) {
+export function scrapeNewsList(page: string): string[] {
   const $ = cheerio.load(page);
 
   const urls: string[] = [];
@@ -29,14 +29,14 @@ export interface Attachemnt {
 }
 
 // TODO: scrape text
-interface ScrapedNews {
+export interface ScrapedNews {
   title: string;
   id: string;
   date: Date;
   attachments: Attachemnt[];
 }
 
-function scrapeNewsPage(page: string): ScrapedNews {
+export function scrapeNewsPage(page: string): ScrapedNews {
   const $ = cheerio.load(page);
 
   const title = $('#page-title').text();
