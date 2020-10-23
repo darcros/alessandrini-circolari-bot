@@ -1,9 +1,6 @@
 import { readFile, writeFile, mkdir, access } from 'fs/promises';
 import { constants } from 'fs';
 import { dirname } from 'path';
-import { getEnv } from './util';
-
-const CACHE_PATH = getEnv('CACHE_PATH', './data/cache.json');
 
 function exists(path: string): Promise<boolean> {
   return access(path, constants.R_OK | constants.W_OK)
@@ -25,16 +22,28 @@ async function write<T>(path: string, set: Set<T>): Promise<void> {
   await writeFile(path, jsonString);
 }
 
-export async function wasSent(url: string): Promise<boolean> {
-  if (!exists(CACHE_PATH)) return false;
+async function isPresent(path: string, url: string): Promise<boolean> {
+  if (!exists(path)) return false;
 
-  const set = await read<string>(CACHE_PATH);
+  const set = await read<string>(path);
   return set.has(url);
 }
 
-export async function confirmSent(url: string): Promise<void> {
-  const set = exists(CACHE_PATH) ? await read<string>(CACHE_PATH) : new Set();
+async function add(path: string, url: string): Promise<void> {
+  const set = exists(path) ? await read<string>(path) : new Set();
 
   set.add(url);
-  await write(CACHE_PATH, set);
+  await write(path, set);
+}
+
+export interface UrlCache {
+  isPresent: (url: string) => Promise<boolean>;
+  add: (url: string) => Promise<void>;
+}
+
+export function createCache(path: string): UrlCache {
+  return {
+    isPresent: (url: string) => isPresent(path, url),
+    add: (url: string) => add(path, url),
+  };
 }
