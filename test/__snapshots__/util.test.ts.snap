@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`environment variables thows when getting undefined envornment variable without a default 1`] = `
+"
+VARIBILI D'AMBIENTE MANCANTI!
+Questa variabile d'ambiente non è stata settata: bar.
+Puoi settarla in due modi:
+1. crea un file chiamato .env nella stessa cartella di package.json e aggiungi questa riga \\"bar=valore\\"
+2. settala tramite il tuo sistema operativo (con bash, CMD, ecc..)
+"
+`;

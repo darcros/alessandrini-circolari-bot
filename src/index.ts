@@ -4,14 +4,14 @@ import { Telegraf } from 'telegraf';
 import { confirmSent } from './cache';
 import { scrapeNews } from './news';
 
-import { requireEnv, fixMultinePadding } from './util';
+import { getEnv, fixMultinePadding } from './util';
 
 // Carica variabili d'ambiente da .env
 dotenv.config();
 
-const TELEGRAM_TOKEN = requireEnv('TELEGRAM_TOKEN');
-const BASE_URL = requireEnv('BASE_URL');
-const TELEGRAM_CHANNEL_ID = requireEnv('TELEGRAM_CHANNEL_ID');
+const TELEGRAM_TOKEN = getEnv('TELEGRAM_TOKEN');
+const BASE_URL = getEnv('BASE_URL');
+const TELEGRAM_CHANNEL_ID = getEnv('TELEGRAM_CHANNEL_ID');
 
 async function main() {
   console.info('Ottengo elenco circolari...');
