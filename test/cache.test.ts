@@ -1,28 +1,27 @@
 import { mkdir, rmdir } from 'fs/promises';
-import { wasSent, confirmSent } from '../src/cache';
+import { createCache, UrlCache } from '../src/cache';
 
 describe('cache', () => {
-  beforeAll(() => {
-    process.env['CACHE_PATH'] = 'test/tmp/cache.json';
-  });
+  let cache: UrlCache;
 
   beforeEach(async () => {
     await mkdir('test/tmp/');
+    cache = createCache('test/tmp/cache.json');
   });
 
   afterEach(async () => {
     await rmdir('test/tmp', { recursive: true });
   });
 
-  test('never saved url is not saved', async () => {
-    const sent = await wasSent('foo');
+  test('never added url is not present', async () => {
+    const sent = await cache.isPresent('foo');
     expect(sent).toBe(false);
   });
 
-  test('saved url is saved', async () => {
-    await confirmSent('foo');
+  test('added url is present', async () => {
+    await cache.add('foo');
 
-    const sent = await wasSent('foo');
+    const sent = await cache.isPresent('foo');
     expect(sent).toBe(true);
   });
 });
