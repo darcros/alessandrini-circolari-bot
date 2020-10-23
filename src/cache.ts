@@ -1,12 +1,5 @@
-import { readFile, writeFile, mkdir, access } from 'fs/promises';
-import { constants } from 'fs';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 import { dirname } from 'path';
-
-function exists(path: string): Promise<boolean> {
-  return access(path, constants.R_OK | constants.W_OK)
-    .then(() => true)
-    .catch(() => false);
-}
 
 async function read<T>(path: string): Promise<Set<T>> {
   const buf = await readFile(path);
@@ -23,14 +16,16 @@ async function write<T>(path: string, set: Set<T>): Promise<void> {
 }
 
 async function isPresent(path: string, url: string): Promise<boolean> {
-  if (!exists(path)) return false;
-
-  const set = await read<string>(path);
-  return set.has(url);
+  try {
+    const set = await read<string>(path);
+    return set.has(url);
+  } catch (_) {
+    return false;
+  }
 }
 
 async function add(path: string, url: string): Promise<void> {
-  const set = exists(path) ? await read<string>(path) : new Set();
+  const set = await read<string>(path).catch(() => new Set<string>());
 
   set.add(url);
   await write(path, set);
