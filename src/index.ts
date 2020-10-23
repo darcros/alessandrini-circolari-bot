@@ -10,8 +10,8 @@ import { getEnv, fixMultinePadding } from './util';
 dotenv.config();
 
 const TELEGRAM_TOKEN = getEnv('TELEGRAM_TOKEN');
-const BASE_URL = getEnv('BASE_URL');
 const TELEGRAM_CHANNEL_ID = getEnv('TELEGRAM_CHANNEL_ID');
+const BASE_URL = getEnv('BASE_URL', 'https://www.alessandrinimainardi.edu.it/categoria/circolari');
 
 async function main() {
   console.info('Ottengo elenco circolari...');
