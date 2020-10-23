@@ -74,7 +74,10 @@ export function scrapeNewsPage(page: string): ScrapedNews {
   };
 }
 
-async function filterNotSent(cache: UrlCache, urls: string[]): Promise<string[]> {
+async function filterNotSent(
+  cache: UrlCache,
+  urls: string[]
+): Promise<string[]> {
   const promises = urls.map(async (url) => ({
     url,
     sent: await cache.isPresent(url),
@@ -93,7 +96,10 @@ export interface News {
   attachments: Attachemnt[];
 }
 
-export async function scrapeNews(cache: UrlCache, newsListPageUrl: string): Promise<News[]> {
+export async function scrapeNews(
+  cache: UrlCache,
+  newsListPageUrl: string
+): Promise<News[]> {
   const { data: newsListPage } = await axios.get<string>(newsListPageUrl);
 
   const urls = scrapeNewsList(newsListPage);
