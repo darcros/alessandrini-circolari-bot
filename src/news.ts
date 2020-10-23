@@ -2,7 +2,7 @@ import axios from 'axios';
 import cheerio from 'cheerio';
 import { parse } from 'date-fns';
 import { URL } from 'url';
-import { wasSent } from './cache';
+import { UrlCache } from './cache';
 
 export function scrapeNewsList(page: string): string[] {
   const $ = cheerio.load(page);
@@ -74,10 +74,13 @@ export function scrapeNewsPage(page: string): ScrapedNews {
   };
 }
 
-async function filterNotSent(urls: string[]): Promise<string[]> {
+async function filterNotSent(
+  cache: UrlCache,
+  urls: string[]
+): Promise<string[]> {
   const promises = urls.map(async (url) => ({
     url,
-    sent: await wasSent(url),
+    sent: await cache.isPresent(url),
   }));
 
   const objs = await Promise.all(promises);
@@ -93,13 +96,16 @@ export interface News {
   attachments: Attachemnt[];
 }
 
-export async function scrapeNews(newsListPageUrl: string): Promise<News[]> {
+export async function scrapeNews(
+  cache: UrlCache,
+  newsListPageUrl: string
+): Promise<News[]> {
   const { data: newsListPage } = await axios.get<string>(newsListPageUrl);
 
   const urls = scrapeNewsList(newsListPage);
   console.info(`Trovati ${urls.length} link`);
 
-  const newUrls = await filterNotSent(urls);
+  const newUrls = await filterNotSent(cache, urls);
   console.info(`Trovati ${newUrls.length} nuovi link`);
 
   const promises: Promise<News>[] = newUrls.map(async (url) => {

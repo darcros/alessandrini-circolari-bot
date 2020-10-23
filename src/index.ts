@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import * as dotenv from 'dotenv';
 import { Telegraf } from 'telegraf';
-import { confirmSent } from './cache';
+import { createCache } from './cache';
 import { scrapeNews } from './news';
 
 import { getEnv, fixMultinePadding } from './util';
@@ -11,11 +11,17 @@ dotenv.config();
 
 const TELEGRAM_TOKEN = getEnv('TELEGRAM_TOKEN');
 const TELEGRAM_CHANNEL_ID = getEnv('TELEGRAM_CHANNEL_ID');
-const BASE_URL = getEnv('BASE_URL', 'https://www.alessandrinimainardi.edu.it/categoria/circolari');
+const BASE_URL = getEnv(
+  'BASE_URL',
+  'https://www.alessandrinimainardi.edu.it/categoria/circolari'
+);
+const CACHE_PATH = getEnv('CACHE_PATH', './data/cache.json');
 
 async function main() {
+  const cache = createCache(CACHE_PATH);
+
   console.info('Ottengo elenco circolari...');
-  const newsList = await scrapeNews(BASE_URL);
+  const newsList = await scrapeNews(cache, BASE_URL);
   console.info(`Ottenute ${newsList.length} circolari.`);
 
   const bot = new Telegraf(TELEGRAM_TOKEN);
@@ -43,7 +49,7 @@ async function main() {
         disable_web_page_preview: true,
       }
     );
-    await confirmSent(news.url);
+    await cache.add(news.url);
   }
   console.info('finito');
 }
