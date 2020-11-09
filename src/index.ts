@@ -2,6 +2,7 @@ import * as dotenv from 'dotenv';
 
 import { createCache } from './cache';
 import { scrapeNews } from './news';
+import { createDiscordBot } from './platforms/discord';
 import { createTelegramBot } from './platforms/telegram';
 import { getEnv } from './util';
 
@@ -10,6 +11,8 @@ dotenv.config();
 
 const TELEGRAM_TOKEN = getEnv('TELEGRAM_TOKEN');
 const TELEGRAM_CHANNEL_ID = getEnv('TELEGRAM_CHANNEL_ID');
+const DISCORD_WEBHOOK_ID = getEnv('DISCORD_WEBHOOK_ID');
+const DISCORD_WEBHOOK_TOKEN = getEnv('DISCORD_WEBHOOK_TOKEN');
 const BASE_URL = getEnv(
   'BASE_URL',
   'https://www.alessandrinimainardi.edu.it/categoria/circolari'
@@ -23,13 +26,19 @@ async function main() {
     TELEGRAM_CHANNEL_ID,
     cache
   );
+  const discordBot = createDiscordBot(
+    DISCORD_WEBHOOK_ID,
+    DISCORD_WEBHOOK_TOKEN,
+    cache
+  );
 
   console.info('Ottengo elenco circolari...');
   const newsList = await scrapeNews(cache, BASE_URL);
   console.info(`Ottenute ${newsList.length} circolari.`);
 
   console.info(`Invio ${newsList.length} messaggi`);
-  telegramBot.send(newsList);
+  await telegramBot.send(newsList);
+  await discordBot.send(newsList);
   console.info('finito');
 }
 
