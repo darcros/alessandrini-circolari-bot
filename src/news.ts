@@ -1,8 +1,11 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
 import { parse } from 'date-fns';
+import TurndownService from 'turndown';
 import { URL } from 'url';
 import { UrlCache } from './cache';
+
+const turndownService = new TurndownService();
 
 export function scrapeNewsList(page: string): string[] {
   const $ = cheerio.load(page);
@@ -28,10 +31,10 @@ export interface Attachemnt {
   url: string;
 }
 
-// TODO: scrape text
 export interface ScrapedNews {
   title: string;
   id: string;
+  text: string;
   date: Date;
   attachments: Attachemnt[];
 }
@@ -54,6 +57,9 @@ export function scrapeNewsPage(page: string): ScrapedNews {
     '.field.field-name-field-circolare-protocollo > .field-item'
   ).text();
 
+  const textHtml = $('.field.field-name-body > .field-item').html();
+  const text = turndownService.turndown(textHtml);
+
   // NOTE: tra .field-item e .file c'è uno spazion e non un >
   // non è fatto a caso, è perchè ci sono altri elementi in mezzo
   const attachments: Attachemnt[] = $(
@@ -70,6 +76,7 @@ export function scrapeNewsPage(page: string): ScrapedNews {
     title,
     date,
     id,
+    text,
     attachments,
   };
 }
