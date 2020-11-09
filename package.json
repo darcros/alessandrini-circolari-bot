@@ -7,7 +7,7 @@
     "test": "jest",
     "start": "ts-node .",
     "dev": "ts-node-dev .",
-    "lint": "eslint **/*.ts && prettier --write **/*.ts"
+    "lint": "eslint --cache **/*.ts && prettier --write **/*.ts"
   },
   "husky": {
     "hooks": {
