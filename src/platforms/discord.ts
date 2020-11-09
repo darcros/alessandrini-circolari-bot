@@ -3,8 +3,8 @@ import { MessageEmbed, WebhookClient } from 'discord.js';
 
 import { UrlCache } from '../cache';
 import { News } from '../news';
-import { chunk } from '../util';
-import { Bot } from './bot';
+import { chunk, getEnv } from '../util';
+import { Bot, Platform } from '.';
 
 async function send(
   news: News | News[],
@@ -44,12 +44,29 @@ async function send(
   await Promise.all(newsArray.map((news) => cache.add(news.url)));
 }
 
-export function createDiscordBot(
-  webhookId: string,
-  webhookToken: string,
-  cache: UrlCache
-): Bot {
+function isEnabled(): boolean {
+  try {
+    getEnv('DISCORD_WEBHOOK_ID');
+    getEnv('DISCORD_WEBHOOK_TOKEN');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function initialize(cache: UrlCache): Bot {
+  const DISCORD_WEBHOOK_ID = getEnv('DISCORD_WEBHOOK_ID');
+  const DISCORD_WEBHOOK_TOKEN = getEnv('DISCORD_WEBHOOK_TOKEN');
+
   return {
-    send: (news: News | News[]) => send(news, webhookId, webhookToken, cache),
+    platformName: 'Telegram',
+    send: (news: News | News[]) =>
+      send(news, DISCORD_WEBHOOK_ID, DISCORD_WEBHOOK_TOKEN, cache),
   };
 }
+
+export const discordPlatform: Platform = {
+  name: 'Discord',
+  isEnabled,
+  initialize,
+};

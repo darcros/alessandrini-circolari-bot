@@ -3,8 +3,8 @@ import { Telegraf } from 'telegraf';
 
 import { UrlCache } from '../cache';
 import { News } from '../news';
-import { fixMultinePadding } from '../util';
-import { Bot } from './bot';
+import { fixMultinePadding, getEnv } from '../util';
+import { Bot, Platform } from '.';
 
 async function send(
   news: News | News[],
@@ -39,12 +39,29 @@ async function send(
   }
 }
 
-export function createTelegramBot(
-  token: string,
-  channelId: string,
-  cache: UrlCache
-): Bot {
+function isEnabled(): boolean {
+  try {
+    getEnv('TELEGRAM_TOKEN');
+    getEnv('TELEGRAM_CHANNEL_ID');
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function initialize(cache: UrlCache): Bot {
+  const TELEGRAM_TOKEN = getEnv('TELEGRAM_TOKEN');
+  const TELEGRAM_CHANNEL_ID = getEnv('TELEGRAM_CHANNEL_ID');
+
   return {
-    send: (news: News | News[]) => send(news, token, channelId, cache),
+    platformName: 'Telegram',
+    send: (news: News | News[]) =>
+      send(news, TELEGRAM_TOKEN, TELEGRAM_CHANNEL_ID, cache),
   };
 }
+
+export const telegramPlatform: Platform = {
+  name: 'Telegram',
+  isEnabled,
+  initialize,
+};
