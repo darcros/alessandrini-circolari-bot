@@ -94,13 +94,9 @@ async function filterNotSent(
   return objs.filter(({ sent }) => !sent).map(({ url }) => url);
 }
 
-export interface News {
-  title: string;
-  id: string;
-  date: Date;
+export interface News extends ScrapedNews {
   url: string;
   absoluteUrl: string;
-  attachments: Attachemnt[];
 }
 
 export async function scrapeNews(

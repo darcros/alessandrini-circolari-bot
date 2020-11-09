@@ -35,6 +35,8 @@ async function main() {
       📒 Numero: ${news.id}
       📆 Data: ${format(news.date, 'dd/MM/yyyy')}
 
+      ${news.text}
+
       ${news.attachments.length > 0 ? '🔗 Allegati' : ''}
       ${news.attachments
         .map((attachment) => `▪️[${attachment.name}](${attachment.url})`)
