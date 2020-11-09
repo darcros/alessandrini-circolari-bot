@@ -9,6 +9,11 @@
     "dev": "ts-node-dev .",
     "lint": "eslint **/*.ts && prettier --write **/*.ts"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm test"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/darcros/alessandrini-circolari-bot.git"
@@ -32,6 +37,7 @@
     "@typescript-eslint/eslint-plugin": "^4.4.1",
     "@typescript-eslint/parser": "^4.4.1",
     "eslint": "^7.11.0",
+    "husky": "^4.3.0",
     "jest": "^26.6.0",
     "prettier": "^2.1.2",
     "ts-jest": "^26.4.1",
