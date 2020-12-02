@@ -1,9 +1,6 @@
-import axios from 'axios';
 import cheerio from 'cheerio';
 import { parse } from 'date-fns';
 import TurndownService from 'turndown';
-import { URL } from 'url';
-import { UrlCache } from './cache';
 
 const turndownService = new TurndownService();
 
@@ -81,55 +78,7 @@ export function scrapeNewsPage(page: string): ScrapedNews {
   };
 }
 
-async function filterNotSent(
-  cache: UrlCache,
-  urls: string[]
-): Promise<string[]> {
-  const promises = urls.map(async (url) => ({
-    url,
-    sent: await cache.isPresent(url),
-  }));
-
-  const objs = await Promise.all(promises);
-  return objs.filter(({ sent }) => !sent).map(({ url }) => url);
-}
-
 export interface News extends ScrapedNews {
   url: string;
   absoluteUrl: string;
-}
-
-export async function scrapeNews(
-  cache: UrlCache,
-  newsListPageUrl: string
-): Promise<News[]> {
-  const { data: newsListPage } = await axios.get<string>(newsListPageUrl);
-
-  const urls = scrapeNewsList(newsListPage);
-  console.info(`Trovati ${urls.length} link`);
-
-  const newUrls = await filterNotSent(cache, urls);
-  console.info(`Trovati ${newUrls.length} nuovi link`);
-
-  const promises: Promise<News>[] = newUrls.map(async (url) => {
-    const absoluteUrl = new URL(url, newsListPageUrl).toString();
-    const { data: newsPage } = await axios.get<string>(absoluteUrl);
-    const scraped = scrapeNewsPage(newsPage);
-
-    return { ...scraped, url, absoluteUrl };
-  });
-
-  // Promise.all() fallisce se una promessa qualsiasi fallisce,
-  // questo non fallisce mai, al massimo restituice un array vuoto
-  const news = (await Promise.allSettled(promises)).flatMap((x) => {
-    if (x.status === 'rejected') {
-      console.error('Errore con una circolare', x.reason);
-    }
-
-    return x.status === 'fulfilled' ? [x.value] : [];
-  });
-  console.info(`scaricate ${news.length} nuova circolari`);
-
-  // ordina dalla più vecchi alla più nuova
-  return news.reverse();
 }

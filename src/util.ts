@@ -33,3 +33,35 @@ export function chunk<T>(arr: T[], size: number): T[][] {
 
   return chunks;
 }
+
+export function toMap<T, K extends string>(
+  arr: T[],
+  getKey: (element: T) => K
+): Map<K, T> {
+  const map: Map<K, T> = new Map();
+
+  arr.forEach((element) => {
+    const k = getKey(element);
+    map.set(k, element);
+  });
+
+  return map;
+}
+
+export function mapObject<T, U>(
+  object: Record<string, T>,
+  mapper: (x: T) => U
+): Record<string, U> {
+  const entries = Object.entries(object).map(([key, value]) => [
+    key,
+    mapper(value),
+  ]);
+  return Object.fromEntries(entries);
+}
+
+export async function allSuccessfull<T>(promises: Promise<T>[]): Promise<T[]> {
+  const settled = await Promise.allSettled(promises);
+  return settled.flatMap((result) =>
+    result.status === 'fulfilled' ? result.value : []
+  );
+}

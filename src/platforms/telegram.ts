@@ -1,7 +1,7 @@
 import { format } from 'date-fns';
 import { Telegraf } from 'telegraf';
 
-import { UrlCache } from '../cache';
+import { Cache } from '../cache';
 import { News } from '../news';
 import { fixMultinePadding, getEnv } from '../util';
 import { Bot, Platform } from '.';
@@ -10,7 +10,7 @@ async function send(
   news: News | News[],
   token: string,
   channelId: string,
-  cache: UrlCache
+  cache: Cache
 ) {
   const newsArray = Array.isArray(news) ? news : [news];
   const bot = new Telegraf(token);
@@ -35,7 +35,7 @@ async function send(
       parse_mode: 'Markdown',
       disable_web_page_preview: true,
     });
-    await cache.add(news.url);
+    await cache.addValue(news.url, telegramPlatform.name);
   }
 }
 
@@ -49,7 +49,7 @@ function isEnabled(): boolean {
   }
 }
 
-function initialize(cache: UrlCache): Bot {
+function initialize(cache: Cache): Bot {
   const TELEGRAM_TOKEN = getEnv('TELEGRAM_TOKEN');
   const TELEGRAM_CHANNEL_ID = getEnv('TELEGRAM_CHANNEL_ID');
 

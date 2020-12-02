@@ -1,4 +1,4 @@
-import { UrlCache } from '../cache';
+import { Cache } from '../cache';
 import { News } from '../news';
 import { discordPlatform } from './discord';
 import { telegramPlatform } from './telegram';
@@ -14,12 +14,12 @@ export interface Platform {
   readonly name: string;
 
   isEnabled: () => boolean;
-  initialize: (cache: UrlCache) => Bot;
+  initialize: (cache: Cache) => Bot;
 }
 
 const platforms = [telegramPlatform, discordPlatform];
 
-export function getEnabledBots(cache: UrlCache): Bot[] {
+export function getEnabledBots(cache: Cache): Bot[] {
   return platforms
     .filter((platform) => {
       const enabled = platform.isEnabled();
