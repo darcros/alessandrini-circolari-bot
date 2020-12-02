@@ -1,19 +1,15 @@
 import { format } from 'date-fns';
 import { MessageEmbed, WebhookClient } from 'discord.js';
 
-import { Cache } from '../cache';
 import { News } from '../news';
 import { chunk, getEnv } from '../util';
-import { Bot, Platform } from '.';
+import { Bot, NewsSendResult, Platform } from '.';
 
 async function send(
-  news: News | News[],
+  newsArray: News[],
   webhookId: string,
-  webhookToken: string,
-  cache: Cache
-) {
-  const newsArray = Array.isArray(news) ? news : [news];
-
+  webhookToken: string
+): Promise<NewsSendResult[]> {
   const allEmbeds = newsArray.map((news) => {
     const formattedAttachments = news.attachments
       .map(
@@ -24,7 +20,7 @@ async function send(
 
     const formattedDate = format(news.date, 'dd/MM/yyyy');
 
-    return new MessageEmbed()
+    const embed = new MessageEmbed()
       .setTitle(news.title)
       .setURL(news.absoluteUrl)
       .setDescription(news.text)
@@ -33,22 +29,36 @@ async function send(
         { name: ':ledger: Numero', value: news.id, inline: true },
         { name: ':calendar: Data', value: formattedDate, inline: true }
       );
+
+    return { embed, news };
   });
 
   const webHook = new WebhookClient(webhookId, webhookToken);
+  const messageStatuses: NewsSendResult[] = [];
 
   try {
     // FIXME: check that total embed size is not > 6000 characters
-    for await (const embeds of chunk(allEmbeds, 5)) {
-      await webHook.send({ embeds });
-    }
+    for await (const chunks of chunk(allEmbeds, 5)) {
+      const embeds = chunks.map((chunk) => chunk.embed);
+      const newsList = chunks.map((chunk) => chunk.news);
 
-    for (const news of newsArray) {
-      await cache.addValue(news.url, discordPlatform.name);
+      try {
+        await webHook.send({ embeds });
+
+        newsList.forEach((news) =>
+          messageStatuses.push({ status: 'ok', news })
+        );
+      } catch (error) {
+        newsList.forEach((news) =>
+          messageStatuses.push({ status: 'error', error, news })
+        );
+      }
     }
   } finally {
     webHook.destroy();
   }
+
+  return messageStatuses;
 }
 
 function isEnabled(): boolean {
@@ -61,14 +71,13 @@ function isEnabled(): boolean {
   }
 }
 
-function initialize(cache: Cache): Bot {
+function initialize(): Bot {
   const DISCORD_WEBHOOK_ID = getEnv('DISCORD_WEBHOOK_ID');
   const DISCORD_WEBHOOK_TOKEN = getEnv('DISCORD_WEBHOOK_TOKEN');
 
   return {
     platformName: 'Discord',
-    send: (news: News | News[]) =>
-      send(news, DISCORD_WEBHOOK_ID, DISCORD_WEBHOOK_TOKEN, cache),
+    send: (news) => send(news, DISCORD_WEBHOOK_ID, DISCORD_WEBHOOK_TOKEN),
   };
 }
 

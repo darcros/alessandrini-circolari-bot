@@ -67,40 +67,45 @@ async function fetchAllNews(
 
   const news = await allSuccessfull(uniqueUrls.map((url) => fetchNews(url)));
   const newsByUrl = toMap(news, (news) => news.url);
-  return mapObject(urlsByPlatform, (urls) => urls.map((url) => newsByUrl.get(url)));
+  return mapObject(urlsByPlatform, (urls) =>
+    urls.map((url) => newsByUrl.get(url))
+  );
 }
 
-async function send(newsByPlatform: NewsByPlatform, bots: Bot[]) {
+async function send(newsByPlatform: NewsByPlatform, bots: Bot[], cache: Cache) {
   for (const bot of bots) {
     const news = newsByPlatform[bot.platformName] || [];
 
-    try {
-      console.info(
-        `Invio ${news.length} messaggi sulla piattaforma ${bot.platformName}`
-      );
-      await bot.send(news);
-    } catch (err) {
-      console.error(
-        `Errore nell'invio sulla piattaform ${bot.platformName}:`,
-        err
-      );
+    console.info(
+      `Invio ${news.length} messaggi sulla piattaforma ${bot.platformName}`
+    );
+    const results = await bot.send(news);
+
+    for (const result of results) {
+      if (result.status === 'ok') {
+        cache.addValue(result.news.url, bot.platformName);
+      } else {
+        console.error(
+          `Errore nell'invio sulla piattaform ${bot.platformName}:`,
+          result.error
+        );
+      }
     }
   }
 }
 
 async function main() {
-  const cache = createCache(CACHE_PATH);
-
-  const bots = getEnabledBots(cache);
+  const bots = getEnabledBots();
   if (bots.length === 0) {
     console.error('Tutte le piattaforme sono disabilitate!');
     return;
   }
 
+  const cache = createCache(CACHE_PATH);
   await cacheUrls(cache);
   const urlsByPlatform = await findNotSentUrls(cache, bots);
   const newsByPlatform = await fetchAllNews(urlsByPlatform);
-  await send(newsByPlatform, bots);
+  await send(newsByPlatform, bots, cache);
 
   console.info('finito');
 }

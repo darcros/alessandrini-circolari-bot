@@ -1,19 +1,17 @@
 import { format } from 'date-fns';
 import { Telegraf } from 'telegraf';
 
-import { Cache } from '../cache';
 import { News } from '../news';
 import { fixMultinePadding, getEnv } from '../util';
-import { Bot, Platform } from '.';
+import { Bot, NewsSendResult, Platform } from '.';
 
 async function send(
-  news: News | News[],
+  newsArray: News[],
   token: string,
-  channelId: string,
-  cache: Cache
-) {
-  const newsArray = Array.isArray(news) ? news : [news];
+  channelId: string
+): Promise<NewsSendResult[]> {
   const bot = new Telegraf(token);
+  const messageStatuses: NewsSendResult[] = [];
 
   for (const news of newsArray) {
     const message = `
@@ -31,12 +29,19 @@ async function send(
         .join('\n')}
     `;
 
-    await bot.telegram.sendMessage(channelId, fixMultinePadding(message), {
-      parse_mode: 'Markdown',
-      disable_web_page_preview: true,
-    });
-    await cache.addValue(news.url, telegramPlatform.name);
+    try {
+      await bot.telegram.sendMessage(channelId, fixMultinePadding(message), {
+        parse_mode: 'Markdown',
+        disable_web_page_preview: true,
+      });
+
+      messageStatuses.push({ status: 'ok', news });
+    } catch (error) {
+      messageStatuses.push({ status: 'error', error, news });
+    }
   }
+
+  return messageStatuses;
 }
 
 function isEnabled(): boolean {
@@ -49,14 +54,13 @@ function isEnabled(): boolean {
   }
 }
 
-function initialize(cache: Cache): Bot {
+function initialize(): Bot {
   const TELEGRAM_TOKEN = getEnv('TELEGRAM_TOKEN');
   const TELEGRAM_CHANNEL_ID = getEnv('TELEGRAM_CHANNEL_ID');
 
   return {
     platformName: 'Telegram',
-    send: (news: News | News[]) =>
-      send(news, TELEGRAM_TOKEN, TELEGRAM_CHANNEL_ID, cache),
+    send: (news) => send(news, TELEGRAM_TOKEN, TELEGRAM_CHANNEL_ID),
   };
 }
 
