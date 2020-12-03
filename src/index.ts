@@ -83,7 +83,7 @@ async function send(newsByPlatform: NewsByPlatform, bots: Bot[], cache: Cache) {
 
     for (const result of results) {
       if (result.status === 'ok') {
-        cache.addValue(result.news.url, bot.platformName);
+        await cache.addValue(result.news.url, bot.platformName);
       } else {
         console.error(
           `Errore nell'invio sulla piattaform ${bot.platformName}:`,
