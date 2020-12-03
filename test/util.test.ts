@@ -1,4 +1,11 @@
-import { getEnv, chunk, allSuccessfull, mapObject, toMap } from '../src/util';
+import {
+  getEnv,
+  chunk,
+  allSuccessfull,
+  mapObject,
+  toMap,
+  splitAt,
+} from '../src/util';
 
 describe('environment variables', () => {
   beforeAll(() => {
@@ -127,5 +134,24 @@ describe('promises allSuccessfull', () => {
     ];
 
     expect(allSuccessfull(promises)).resolves.toStrictEqual(['foo', 'baz']);
+  });
+});
+
+describe('array split at', () => {
+  test('empty array', () => {
+    expect(splitAt([], () => false)).toHaveLength(0);
+  });
+
+  test('splits the array', () => {
+    const arr = ['foo', 'bar', 'split here', 'baz', 'quox'];
+
+    const split = [
+      ['foo', 'bar', 'split here'],
+      ['baz', 'quox'],
+    ];
+
+    const splitter = (chunk: string[]) =>
+      chunk[chunk.length - 1] === 'split here';
+    expect(splitAt(arr, splitter)).toStrictEqual(split);
   });
 });

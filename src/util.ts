@@ -65,3 +65,20 @@ export async function allSuccessfull<T>(promises: Promise<T>[]): Promise<T[]> {
     result.status === 'fulfilled' ? result.value : []
   );
 }
+
+export function splitAt<T>(
+  arr: T[],
+  shouldSplit: (chunk: T[]) => boolean
+): T[][] {
+  const chunks = [];
+  let i = 0;
+
+  for (const item of arr) {
+    if (!chunks[i]) chunks[i] = [];
+    chunks[i].push(item);
+
+    if (shouldSplit(chunks[i])) i++;
+  }
+
+  return chunks;
+}

@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { MessageEmbed, WebhookClient } from 'discord.js';
 
 import { News } from '../news';
-import { chunk, getEnv } from '../util';
+import { getEnv, splitAt } from '../util';
 import { Bot, NewsSendResult, Platform } from '.';
 
 async function send(
@@ -10,7 +10,7 @@ async function send(
   webhookId: string,
   webhookToken: string
 ): Promise<NewsSendResult[]> {
-  const allEmbeds = newsArray.map((news) => {
+  const embedsWithNews = newsArray.map((news) => {
     const formattedAttachments = news.attachments
       .map(
         (attachment) =>
@@ -36,11 +36,16 @@ async function send(
   const webHook = new WebhookClient(webhookId, webhookToken);
   const messageStatuses: NewsSendResult[] = [];
 
+  // split into chunks that, when serialized to JSON, are no longer than approx. 5000 characters
+  const chunks = splitAt(embedsWithNews, (chunk) => {
+    const chunkJson = JSON.stringify(chunk.map(({ embed }) => embed.toJSON()));
+    return chunkJson.length > 5000;
+  });
+
   try {
-    // FIXME: check that total embed size is not > 6000 characters
-    for await (const chunks of chunk(allEmbeds, 5)) {
-      const embeds = chunks.map((chunk) => chunk.embed);
-      const newsList = chunks.map((chunk) => chunk.news);
+    for await (const embedWithNews of chunks) {
+      const embeds = embedWithNews.map((chunk) => chunk.embed);
+      const newsList = embedWithNews.map((chunk) => chunk.news);
 
       try {
         await webHook.send({ embeds });
