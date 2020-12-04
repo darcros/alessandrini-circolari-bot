@@ -22,3 +22,63 @@ export function getEnv(name: string, def?: string): string {
 
   throw new Error(fixMultinePadding(message));
 }
+
+export function chunk<T>(arr: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+
+  for (let i = 0; i < arr.length; i += size) {
+    const chunk = arr.slice(i, i + size);
+    chunks.push(chunk);
+  }
+
+  return chunks;
+}
+
+export function toMap<T, K extends string>(
+  arr: T[],
+  getKey: (element: T) => K
+): Map<K, T> {
+  const map: Map<K, T> = new Map();
+
+  arr.forEach((element) => {
+    const k = getKey(element);
+    map.set(k, element);
+  });
+
+  return map;
+}
+
+export function mapObject<T, U>(
+  object: Record<string, T>,
+  mapper: (x: T) => U
+): Record<string, U> {
+  const entries = Object.entries(object).map(([key, value]) => [
+    key,
+    mapper(value),
+  ]);
+  return Object.fromEntries(entries);
+}
+
+export async function allSuccessfull<T>(promises: Promise<T>[]): Promise<T[]> {
+  const settled = await Promise.allSettled(promises);
+  return settled.flatMap((result) =>
+    result.status === 'fulfilled' ? result.value : []
+  );
+}
+
+export function splitAt<T>(
+  arr: T[],
+  shouldSplit: (chunk: T[]) => boolean
+): T[][] {
+  const chunks = [];
+  let i = 0;
+
+  for (const item of arr) {
+    if (!chunks[i]) chunks[i] = [];
+    chunks[i].push(item);
+
+    if (shouldSplit(chunks[i])) i++;
+  }
+
+  return chunks;
+}
